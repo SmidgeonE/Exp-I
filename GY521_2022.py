@@ -6,7 +6,7 @@ import time
 import matplotlib.pyplot as plt
 
 #establish serial connection to Arduino/GY521
-ser = serial.Serial('COM7', 38400) #Baud rate 38400 Hz, COM port must match.
+ser = serial.Serial('COM3', 38400) #Baud rate 38400 Hz, COM port must match.
 ser.reset_input_buffer()
 ser.reset_output_buffer()
 ser.flush()
@@ -78,6 +78,44 @@ except KeyboardInterrupt:
     plt.tight_layout()
 
     
+    # Velocity
+
+    vx = [0]
+    vy = [0]
+    vz = [0]
+
+    dx = [0]
+    dy = [0]
+    dz = [0]
+
+    for i in range(1,len(ax)):
+        vx.append(vx[i-1] + ax[i-1]*(t[i]-t[i-1]))
+        vy.append(vy[i-1] + ay[i-1]*(t[i]-t[i-1]))  
+        vz.append(vz[i-1] + az[i-1]*(t[i]-t[i-1]))
+
+        dx.append(dx[i-1] + vx[i-1]*(t[i]-t[i-1]))
+        dy.append(dy[i-1] + vy[i-1]*(t[i]-t[i-1]))
+        dz.append(dz[i-1] + vz[i-1]*(t[i]-t[i-1]))
+
+
+    # Plotting
+
+    plt.figure(2)
+    plt.subplot(211)
+    plt.plot(t,vx,'pink',t,vy,'yellow',t,vz,'cyan')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Velocity ($ms^{-1}$)')
+    plt.legend(['$v_x$','$v_y$','$v_z$'],bbox_to_anchor=(1.0,1.0))
+
+    plt.figure(2)
+    plt.subplot(212)
+    plt.plot(t,vx,'pink',t,vy,'yellow',t,vz,'cyan')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Displacement ($m$)')
+    plt.legend(['$d_x$','$d_y$','$d_z$'],bbox_to_anchor=(1.0,1.0))
+    
+
+        
     # (optional) write the data to a text file
     timestr = time.strftime("%d_%m_%Y") 
     choice = input("Save data to .txt file? [Y/N]")
@@ -90,6 +128,7 @@ except KeyboardInterrupt:
         f.close()
         print('File written to:' + str(f))
         print('Done')
+        input()
 
     
 
