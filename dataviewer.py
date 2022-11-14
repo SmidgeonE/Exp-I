@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # %%
+import scipy.integrate
+
 data1Dir = "raw/8thtest.txt"
 straightLineDir = "raw/STRAIGHTLINE__Data.txt"
 eightLinesDir = "raw/8lines__Data.txt"
@@ -9,6 +11,8 @@ eightLinesDir = "raw/8lines__Data.txt"
 data1finalDir = "cleandata/8thtest.npy"
 straightLineFinalDir = "cleandata/STRAIGHTLINE__Data.npy"
 eightLinesFinalDir = "cleandata/8lines__Data.npy"
+
+dx = 0.01
 
 
 def Normalise(dir, finalDir):
@@ -44,7 +48,7 @@ def Normalise(dir, finalDir):
 
 # %%
 
-def VelAndDispEuler(accel, t):
+def velAndDispEuler(accel, t):
     vx = [0]
     dx = [0]
 
@@ -55,22 +59,33 @@ def VelAndDispEuler(accel, t):
     return vx, dx
 
 
+def scipyTrapezoid(accelArray):
+    velArray = scipy.integrate.cumtrapz(np.array(accelArray), x=TimeData, dx=dx)
+    dispArray = scipy.integrate.cumtrapz(np.array(accelArray), x=TimeData, dx=dx)
+    velArray = np.append(velArray, velArray[-1])
+    dispArray = np.append(dispArray, dispArray[-1])
+
+
+    return velArray, dispArray
+
+
 # Reading Data
 
 # rawData8Lines = np.loadtxt(eightLinesDir, skiprows=1, delimiter="\t")
 
-correct8Lines = np.load(eightLinesFinalDir, allow_pickle=True)
+# correctedData = np.load(eightLinesFinalDir, allow_pickle=True)
+# correctedData = np.load(straightLineFinalDir, allow_pickle=True)
+correctedData = np.load(data1finalDir, allow_pickle=True)
 
-eightLineTime = correct8Lines[:, 0]
-eightLineAccel = [correct8Lines[:, 1], correct8Lines[:, 1], correct8Lines[:, 2]]
-eightLineAngVel = [correct8Lines[:, 3], correct8Lines[:, 4], correct8Lines[:, 5]]
-eightLineVel = [[], [], []]
-eightLineDisp = [[], [], []]
+TimeData = correctedData[:, 0]
+AccelData = [correctedData[:, 1], correctedData[:, 1], correctedData[:, 2]]
+AngVelData = [correctedData[:, 3], correctedData[:, 4], correctedData[:, 5]]
+VelData = [[], [], []]
+DispData = [[], [], []]
 
 for i in range(0, 3):
-    eightLineVel[i], eightLineDisp[i] = VelAndDispEuler(eightLineAccel[i],
-                                                        eightLineTime)
-
+    #VelData[i], DispData[i] = velAndDispEuler(AccelData[i], TimeData)
+    VelData[i], DispData[i] = scipyTrapezoid(AccelData[i])
 
 def plotAxes(time, data, tag, ylabel):
     # plt.figure(1)
@@ -83,10 +98,10 @@ def plotAxes(time, data, tag, ylabel):
 
 plt.figure(1)
 plt.subplot(311)
-plotAxes(eightLineTime, eightLineAccel, 'a', 'acceleration (ms^-2)')
+plotAxes(TimeData, AccelData, 'a', 'acceleration (ms^-2)')
 plt.subplot(312)
-plotAxes(eightLineTime, eightLineVel, 'v', 'velocity (ms^-1)')
+plotAxes(TimeData, VelData, 'v', 'velocity (ms^-1)')
 plt.subplot(313)
-plotAxes(eightLineTime, eightLineDisp, 'd', 'displacement (m)')
+plotAxes(TimeData, DispData, 'd', 'displacement (m)')
 
 plt.show()
