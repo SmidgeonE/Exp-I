@@ -6,6 +6,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 #establish serial connection to Arduino/GY521
 ser = serial.Serial('COM3', 38400) #Baud rate 38400 Hz, COM port must match.
 ser.reset_input_buffer()
@@ -134,13 +135,27 @@ except KeyboardInterrupt:
 
 
     for i in range(1,len(ax)):
-        vx.append(vy[i-1] + ay[i-1]*(t[i]-t[i-1]))
+        vx.append(vx[i-1] + ax[i-1]*(t[i]-t[i-1]))
         vy.append(vy[i-1] + ay[i-1]*(t[i]-t[i-1]))  
         vz.append(vz[i-1] + az[i-1]*(t[i]-t[i-1]))
 
         dx.append(dx[i-1] + vx[i-1]*(t[i]-t[i-1]))
         dy.append(dy[i-1] + vy[i-1]*(t[i]-t[i-1]))
         dz.append(dz[i-1] + vz[i-1]*(t[i]-t[i-1]))
+
+    # Reading Data
+
+    dir = "8thtest.txt"
+    dir1 = "STRAIGHTLINE__Data.txt"
+    dir2 = "8lines__Data.txt"
+    finaldir = "8thtestnormalised.npy"
+    finaldir1 = "STRAIGHTLINE__Datanormalised.npy"
+    finaldir2 = "8lines__Datanormalised.npy"
+
+    rawData8Lines = np.loadtxt(dir2, skiprows=1, delimiter="\t")
+    normalised8Lines = np.load(finaldir2, allow_pickle=True)
+
+    rawAccel8Lines, rawVel8Lines = VelAndDispEuler(rawData8Lines[1], rawData8Lines[0])
 
     # Plotting
 
@@ -158,10 +173,19 @@ except KeyboardInterrupt:
     plt.ylabel('Displacement ($m$)')
     plt.legend(['$d_x$','$d_y$','$d_z$'],bbox_to_anchor=(1.0,1.0))
 
+
     plt.figure(3)
     plt.subplot(211)
-    axes = plt.axes(projection='3d')
-    axes.plot3D(vx, vy, vz,'green')
+    plt.plot(dx,dy)
+    plt.xlabel('X (m)')
+    plt.ylabel('Y (m)')
+    plt.legend(['$d_x$','$d_y$','$d_z$'],bbox_to_anchor=(1.0,1.0))
+
+
+##    plt.figure(3)
+##    plt.subplot(212)
+##    axes = plt.axes(projection='3d')
+##    axes.plot3D(vx, vy, vz,'green')
 
         
     # (optional) write the data to a text file
@@ -169,7 +193,7 @@ except KeyboardInterrupt:
     choice = input("Save data to .txt file? [Y/N]")
     if choice == 'Y':
         Filename = input("Enter Filename:")
-        f = open(Filename + '_' + timestr + '_Data.txt','w')
+        f = open(Filename + '_' + '_Data.txt','w')
         f.write('Time\tax\tay\taz\tgx\gy\gz\n')
         for i in range(len(ax)):
             f.write('%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (t[i],ax[i],ay[i],az[i],gx[i],gy[i],gz[i]))
@@ -181,3 +205,4 @@ except KeyboardInterrupt:
     
 
     plt.show()
+
