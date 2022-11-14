@@ -4,6 +4,7 @@
 import serial
 import time
 import matplotlib.pyplot as plt
+import numpy as np
 
 #establish serial connection to Arduino/GY521
 ser = serial.Serial('COM3', 38400) #Baud rate 38400 Hz, COM port must match.
@@ -77,6 +78,34 @@ except KeyboardInterrupt:
 
     plt.tight_layout()
 
+    # Average values
+
+    a = 0
+    for lists in (ax,ay,az):
+        for x in lists:
+            a += x
+        a /= len(lists)
+        print(a)
+
+    offsets = np.array([-0.022769551881602103,-0.01648349268420826, 0.016067267142786296])
+        
+
+    # numpyify
+
+    # accels = np.empty((len(ax),3)) * 0
+    
+    # for i in range(len(ax)):
+    #     accels[i] = [ax[i], ay[i], az[i]]
+    # vels = np.empty((len(ax),3)) * 0
+    # disps = np.empty((len(ax),3)) * 0
+
+
+    # print("accls")
+    # print(accels)
+    # print("vels")
+    # print(vels)
+    # print("disps")
+    # print(disps)
     
     # Velocity
 
@@ -88,15 +117,30 @@ except KeyboardInterrupt:
     dy = [0]
     dz = [0]
 
+#    for i in range(1,len(ax)):
+#        print(vels[i])
+#        print(vels[i-1])
+#        print(accels[i-1])
+#        vels[i] = vels[i-1] + accels[i-1]*(t[i]-t[i-1])
+#        disps[i] = disps[i-1] + vels[i-1]*(t[i]-t[i-1])
+
+
+# for axis in range(0,3):
+#     for i in range(1,len(ax)):
+#         print(axis)
+#         print(i)
+#         vels[axis] = np.append(vels[axis], vels[axis][i-1] + accels[axis][i-1]*(t[i]-t[i-1]))
+#         disps[axis] = np.append(disps[axis], disps[axis][i-1] + vels[axis][i-1]*(t[i]-t[i-1]))
+
+
     for i in range(1,len(ax)):
-        vx.append(vx[i-1] + ax[i-1]*(t[i]-t[i-1]))
+        vx.append(vy[i-1] + ay[i-1]*(t[i]-t[i-1]))
         vy.append(vy[i-1] + ay[i-1]*(t[i]-t[i-1]))  
         vz.append(vz[i-1] + az[i-1]*(t[i]-t[i-1]))
 
         dx.append(dx[i-1] + vx[i-1]*(t[i]-t[i-1]))
         dy.append(dy[i-1] + vy[i-1]*(t[i]-t[i-1]))
         dz.append(dz[i-1] + vz[i-1]*(t[i]-t[i-1]))
-
 
     # Plotting
 
@@ -109,11 +153,15 @@ except KeyboardInterrupt:
 
     plt.figure(2)
     plt.subplot(212)
-    plt.plot(t,vx,'pink',t,vy,'yellow',t,vz,'cyan')
+    plt.plot(t,dx,'pink',t,dy,'yellow',t,dz,'cyan')
     plt.xlabel('Time (s)')
     plt.ylabel('Displacement ($m$)')
     plt.legend(['$d_x$','$d_y$','$d_z$'],bbox_to_anchor=(1.0,1.0))
-    
+
+    plt.figure(3)
+    plt.subplot(211)
+    axes = plt.axes(projection='3d')
+    axes.plot3D(vx, vy, vz,'green')
 
         
     # (optional) write the data to a text file
