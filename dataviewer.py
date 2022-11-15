@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.fft
 
 # %%
 import scipy.integrate
@@ -73,9 +74,9 @@ def scipyTrapezoid(accelArray):
 
 # rawData8Lines = np.loadtxt(eightLinesDir, skiprows=1, delimiter="\t")
 
-correctedData = np.load(eightLinesFinalDir, allow_pickle=True)
+#correctedData = np.load(eightLinesFinalDir, allow_pickle=True)
 #correctedData = np.load(straightLineFinalDir, allow_pickle=True)
-#correctedData = np.load(data1finalDir, allow_pickle=True)
+correctedData = np.load(data1finalDir, allow_pickle=True)
 
 TimeData = correctedData[:, 0]
 AccelData = [correctedData[:, 1], correctedData[:, 2], correctedData[:, 3]]
@@ -83,9 +84,13 @@ AngVelData = [correctedData[:, 4], correctedData[:, 5], correctedData[:, 6]]
 VelData = [[], [], []]
 DispData = [[], [], []]
 
+# Iterate over all axes
+
 for i in range(0, 3):
     #VelData[i], DispData[i] = velAndDispEuler(AccelData[i], TimeData)
     VelData[i], DispData[i] = scipyTrapezoid(AccelData[i])
+
+# Reusable function to plot data in a neat way
 
 def plotAxes(time, data, tag, ylabel):
     # plt.figure(1)
@@ -96,6 +101,18 @@ def plotAxes(time, data, tag, ylabel):
     plt.ylabel(ylabel)
     plt.legend([tag + '$_x$', tag + '$_y$', tag + '$_z$'], bbox_to_anchor=(1.0, 1.0))
 
+
+# FFT
+
+calcedMean = np.mean(TimeData - np.append(np.array([0]), TimeData[:len(TimeData)-1]))
+rate = 1/calcedMean
+n = round(rate * TimeData[-1])
+Fourier = abs(scipy.fft.rfft(AccelData))
+freq = scipy.fft.rfftfreq(n, calcedMean)
+
+
+# Plotting all the main data
+
 plt.figure(1)
 plt.subplot(311)
 plotAxes(TimeData, AccelData, 'a', 'acceleration (ms^-2)')
@@ -103,5 +120,13 @@ plt.subplot(312)
 plotAxes(TimeData, VelData, 'v', 'velocity (ms^-1)')
 plt.subplot(313)
 plotAxes(TimeData, DispData, 'd', 'displacement (m)')
+
+plt.figure(2)
+# plt.subplot(311)
+# plotAxes(TimeData, AngVelData, 'w', 'angular velocity (rad s^-1)')
+plt.subplot(312)
+
+plotAxes(freq[10:], Fourier[:, 10:], '', 'asdasd')
+
 
 plt.show()
