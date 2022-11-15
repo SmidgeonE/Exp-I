@@ -147,14 +147,16 @@ indices = [Fourier[0,10:].argmax(), Fourier[1,10:].argmax(), Fourier[2,10:].argm
 # Calculates nyquist values for each axis
 nyquist = np.array([freq[indices[0]], freq[indices[1]], freq[indices[2]]]) * 2
 
-
 plt.subplot(313)
-sos = [sg.butter(1,0.5,fs=nyquist[0], output='sos'),
-       sg.butter(1,0.5,fs=nyquist[1], output='sos'),
-       sg.butter(1,0.5,fs=nyquist[2], output='sos')]
+order = 3
+sos = [sg.butter(order,0.5,fs=nyquist[0], output='sos'),
+       sg.butter(order,0.5,fs=nyquist[1], output='sos'),
+       sg.butter(order,0.5,fs=nyquist[2], output='sos')]
 # w, h = sg.freqs(sos)
 
-filtered = sg.sosfilt(sos[0], AccelData)
+filtered = np.array([sg.sosfilt(sos[0], AccelData[0]),
+            sg.sosfilt(sos[1], AccelData[1]),
+            sg.sosfilt(sos[2], AccelData[2])])
 
 plotAxes(TimeData, filtered, 'Butterworth', 'filtered')
 
