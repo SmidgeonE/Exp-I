@@ -1,17 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.fft
-
+import scipy.signal as sg
 # %%
 import scipy.integrate
 
 data1Dir = "raw/8thtest.txt"
 straightLineDir = "raw/STRAIGHTLINE__Data.txt"
 eightLinesDir = "raw/8lines__Data.txt"
+fiveLinesDir = "raw/15-11 5 lines 12cm_15_11_2022_Data.txt"
 
 data1finalDir = "cleandata/8thtest.npy"
 straightLineFinalDir = "cleandata/STRAIGHTLINE__Data.npy"
 eightLinesFinalDir = "cleandata/8lines__Data.npy"
+fiveLinesFinalDir = "cleandata/15-11 5 lines 12cm_15_11_2022_Data.npy"
 
 dx = 0.01
 
@@ -45,6 +47,7 @@ def Normalise(dir, finalDir):
 # Normalise(eightLinesDir, eightLinesFinalDir)
 # Normalise(data1Dir, data1finalDir)
 # Normalise(straightLineDir, straightLineFinalDir)
+# Normalise(fiveLinesDir, fiveLinesFinalDir)
 
 
 # %%
@@ -76,7 +79,8 @@ def scipyTrapezoid(accelArray):
 
 #correctedData = np.load(eightLinesFinalDir, allow_pickle=True)
 #correctedData = np.load(straightLineFinalDir, allow_pickle=True)
-correctedData = np.load(data1finalDir, allow_pickle=True)
+#correctedData = np.load(data1finalDir, allow_pickle=True)
+correctedData = np.load(fiveLinesFinalDir, allow_pickle=True)
 
 TimeData = correctedData[:, 0]
 AccelData = [correctedData[:, 1], correctedData[:, 2], correctedData[:, 3]]
@@ -92,14 +96,15 @@ for i in range(0, 3):
 
 # Reusable function to plot data in a neat way
 
-def plotAxes(time, data, tag, ylabel):
+def plotAxes(time, data, tag, ylabel, xlabel=''):
     # plt.figure(1)
     # plt.subplot(211)
     plt.plot(time, data[0], 'r',
             time, data[1], 'g',
             time, data[2], 'b')
     plt.ylabel(ylabel)
-    plt.legend([tag + '$_x$', tag + '$_y$', tag + '$_z$'], bbox_to_anchor=(1.0, 1.0))
+    plt.xlabel(xlabel)
+    plt.legend([tag + '$_x$', tag + '$_y$', tag + '$_z$'], bbox_to_anchor=(1, 1))
 
 
 # FFT
@@ -108,7 +113,7 @@ calcedMean = np.mean(TimeData - np.append(np.array([0]), TimeData[:len(TimeData)
 rate = 1/calcedMean
 n = round(rate * TimeData[-1])
 Fourier = abs(scipy.fft.rfft(AccelData))
-freq = scipy.fft.rfftfreq(n, calcedMean)
+freq = scipy.fft.rfftfreq(n, 1/rate)
 
 
 # Plotting all the main data
@@ -124,9 +129,36 @@ plotAxes(TimeData, DispData, 'd', 'displacement (m)')
 plt.figure(2)
 # plt.subplot(311)
 # plotAxes(TimeData, AngVelData, 'w', 'angular velocity (rad s^-1)')
-plt.subplot(312)
 
-plotAxes(freq[10:], Fourier[:, 10:], '', 'asdasd')
+plt.subplot(311)
+plotAxes(freq[10:], Fourier[:, 10:], 'F', 'Fourier Amplitude (ms^-2)', 'Frequency (Hz)')
+
+plt.subplot(312)
+plotAxes(TimeData, AccelData, 'a', 'acceleration (ms^-2)')
+
+
+
+
+# Indices of the largest values for the FFT, except in the first few data points
+# As FFT assumes periodicity
+indices = [Fourier[0,10:].argmax(), Fourier[1,10:].argmax(), Fourier[2,10:].argmax()]
+
+
+# Calculates nyquist values for each axis
+nyquist = np.array([freq[indices[0]], freq[indices[1]], freq[indices[2]]]) * 2
+
+
+plt.subplot(313)
+sos = [sg.butter(1,0.5,fs=nyquist[0], output='sos'),
+       sg.butter(1,0.5,fs=nyquist[1], output='sos'),
+       sg.butter(1,0.5,fs=nyquist[2], output='sos')]
+# w, h = sg.freqs(sos)
+
+filtered = sg.sosfilt(sos[0], AccelData)
+
+plotAxes(TimeData, filtered, 'Butterworth', 'filtered')
+
+
 
 
 plt.show()
