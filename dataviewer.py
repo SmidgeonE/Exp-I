@@ -49,20 +49,20 @@ def Normalise(dir, finalDir):
 # %%
 
 def velAndDispEuler(accel, t):
-    vx = [0]
-    dx = [0]
+    velArray = [0]
+    dispArray = [0]
 
     for i in range(1, len(accel)):
-        vx.append(vx[i - 1] + accel[i - 1] * (t[i] - t[i - 1]))
-        dx.append(dx[i - 1] + vx[i - 1] * (t[i] - t[i - 1]))
+        velArray.append(velArray[i - 1] + accel[i - 1] * (t[i] - t[i - 1]))
+        dispArray.append(dispArray[i - 1] + velArray[i - 1] * (t[i] - t[i - 1]))
 
-    return vx, dx
+    return velArray, dispArray
 
 
 def scipyTrapezoid(accelArray):
     velArray = scipy.integrate.cumtrapz(np.array(accelArray), x=TimeData, dx=dx)
-    dispArray = scipy.integrate.cumtrapz(np.array(accelArray), x=TimeData, dx=dx)
     velArray = np.append(velArray, velArray[-1])
+    dispArray = scipy.integrate.cumtrapz(np.array(velArray), x=TimeData, dx=dx)
     dispArray = np.append(dispArray, dispArray[-1])
 
 
@@ -73,13 +73,13 @@ def scipyTrapezoid(accelArray):
 
 # rawData8Lines = np.loadtxt(eightLinesDir, skiprows=1, delimiter="\t")
 
-# correctedData = np.load(eightLinesFinalDir, allow_pickle=True)
-# correctedData = np.load(straightLineFinalDir, allow_pickle=True)
-correctedData = np.load(data1finalDir, allow_pickle=True)
+correctedData = np.load(eightLinesFinalDir, allow_pickle=True)
+#correctedData = np.load(straightLineFinalDir, allow_pickle=True)
+#correctedData = np.load(data1finalDir, allow_pickle=True)
 
 TimeData = correctedData[:, 0]
-AccelData = [correctedData[:, 1], correctedData[:, 1], correctedData[:, 2]]
-AngVelData = [correctedData[:, 3], correctedData[:, 4], correctedData[:, 5]]
+AccelData = [correctedData[:, 1], correctedData[:, 2], correctedData[:, 3]]
+AngVelData = [correctedData[:, 4], correctedData[:, 5], correctedData[:, 6]]
 VelData = [[], [], []]
 DispData = [[], [], []]
 
