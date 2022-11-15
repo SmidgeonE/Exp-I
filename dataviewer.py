@@ -137,7 +137,8 @@ plt.subplot(312)
 plotAxes(TimeData, AccelData, 'a', 'acceleration (ms^-2)')
 
 
-
+# Applying Butterworth filter
+#
 
 # Indices of the largest values for the FFT, except in the first few data points
 # As FFT assumes periodicity
@@ -160,7 +161,20 @@ filtered = np.array([sg.sosfilt(sos[0], AccelData[0]),
 
 plotAxes(TimeData, filtered, 'Butterworth', 'filtered')
 
+# Applying Savgol Filter
+#
 
+filtersize = 1001
+polyorder = 5
+plt.figure(3)
+plt.subplot(311)
+plotAxes(TimeData,
+         scipy.signal.savgol_filter(filtered, filtersize, polyorder),
+         'hello', 'acceleration (ms^-2)')
 
+plt.subplot(312)
+plotAxes(TimeData,
+         scipy.signal.savgol_filter(AccelData, filtersize, polyorder),
+         'hello', 'acceleration (ms^-2)')
 
 plt.show()
