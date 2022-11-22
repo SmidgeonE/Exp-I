@@ -92,6 +92,23 @@ def scipyTrapezoid(accelArray):
     return velArray, dispArray
 
 
+# This accounts for the offset the MEMS has to the actual body of the arduino
+# It takes the max point of accel for the y axis
+# Finds the corresponding x value
+# Uses the fact that accel_x = A * sin(phi)
+# Where phi is the offset in the y
+
+def findAngleOffset(accelArray):
+    yMaxIndex = accelArray[1].argmax()
+    AsinPhi = accelArray[0][yMaxIndex]
+    magA = np.sqrt((accelArray[1][yMaxIndex])**2 + (accelArray[0][yMaxIndex])**2)
+    phi = np.arcsin(AsinPhi / magA)
+    print(phi)
+
+    return phi
+
+
+
 # Reading Data
 
 
@@ -111,6 +128,11 @@ AccelData = [correctedData[:, 1], correctedData[:, 2], correctedData[:, 3]]
 AngVelData = [correctedData[:, 4], correctedData[:, 5], correctedData[:, 6]]
 VelData = [[], [], []]
 DispData = [[], [], []]
+
+
+AccelData[0] -= AccelData[1] * np.sin(findAngleOffset(AccelData))
+AccelData[1] += AccelData[0] * np.sin(findAngleOffset(AccelData))
+
 
 # Iterate over all axes
 
@@ -147,7 +169,7 @@ freq = scipy.fft.rfftfreq(n, 1/rate)
 
 # Plotting all the main data
 #
-# plt.figure(1)
+# plt.figure(4)
 # plt.subplot(311)
 # plotAxes(TimeData, AccelData, 'a', 'acceleration (ms^-2)')
 # plt.subplot(312)
