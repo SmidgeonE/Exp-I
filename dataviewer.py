@@ -98,13 +98,13 @@ def scipyTrapezoid(accelArray):
 # Uses the fact that accel_x = A * sin(phi)
 # Where phi is the offset in the y
 
-def findAngleOffset(accelArray):
-    yMaxIndex = accelArray[1].argmax()
-    AsinPhi = accelArray[0][yMaxIndex]
-    magA = np.sqrt((accelArray[1][yMaxIndex])**2 + (accelArray[0][yMaxIndex])**2)
-    phi = np.arcsin(AsinPhi / magA)
-    print(phi)
 
+def findAngleOffset(accelArray):
+    global magA
+    magA = np.sqrt(accelArray[1]**2 + accelArray[0]**2)
+    phi = np.arcsin(accelArray[0] / magA)
+    print("phi values:", phi)
+    print("average phi, ", np.mean(phi))
     return phi
 
 
@@ -129,9 +129,8 @@ AngVelData = [correctedData[:, 4], correctedData[:, 5], correctedData[:, 6]]
 VelData = [[], [], []]
 DispData = [[], [], []]
 
-
-AccelData[0] -= AccelData[1] * np.sin(findAngleOffset(AccelData))
-AccelData[1] += AccelData[0] * np.sin(findAngleOffset(AccelData))
+phiArray = findAngleOffset(AccelData)
+AccelData[0] -= magA * np.sin(phiArray)
 
 
 # Iterate over all axes
