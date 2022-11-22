@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.fft
 import scipy.signal as sg
+import time
 # %%
 import scipy.integrate
 
@@ -77,10 +78,10 @@ def scipyTrapezoid(accelArray):
 
 # rawData8Lines = np.loadtxt(eightLinesDir, skiprows=1, delimiter="\t")
 
-#correctedData = np.load(eightLinesFinalDir, allow_pickle=True)
+correctedData = np.load(eightLinesFinalDir, allow_pickle=True)
 #correctedData = np.load(straightLineFinalDir, allow_pickle=True)
 #correctedData = np.load(data1finalDir, allow_pickle=True)
-correctedData = np.load(fiveLinesFinalDir, allow_pickle=True)
+#correctedData = np.load(fiveLinesFinalDir, allow_pickle=True)
 
 TimeData = correctedData[:, 0]
 AccelData = [correctedData[:, 1], correctedData[:, 2], correctedData[:, 3]]
@@ -90,9 +91,14 @@ DispData = [[], [], []]
 
 # Iterate over all axes
 
+startTime = time.time()
 for i in range(0, 3):
     #VelData[i], DispData[i] = velAndDispEuler(AccelData[i], TimeData)
     VelData[i], DispData[i] = scipyTrapezoid(AccelData[i])
+
+endTime = time.time()
+
+print("Total Time Used: ", endTime-startTime)
 
 # Reusable function to plot data in a neat way
 
@@ -150,9 +156,9 @@ nyquist = np.array([freq[indices[0]], freq[indices[1]], freq[indices[2]]])/2
 
 plt.subplot(313)
 order = 5
-sos = [sg.butter(order, 0.5, fs=nyquist[0], output='sos'),
-       sg.butter(order, 0.5, fs=nyquist[1], output='sos'),
-       sg.butter(order, 0.5, fs=nyquist[2], output='sos')]
+sos = [sg.butter(order, 0.01, fs=nyquist[0], output='sos'),
+       sg.butter(order, 0.01, fs=nyquist[1], output='sos'),
+       sg.butter(order, 0.01, fs=nyquist[2], output='sos')]
 # w, h = sg.freqs(sos)
 
 filtered = np.array([sg.sosfilt(sos[0], AccelData[0]),
@@ -173,16 +179,16 @@ if filtersize % 2 == 0:
     filtersize -= 1
 
 
-polyorder = 3
+polyorder = 5
 plt.figure(3)
-plt.subplot(311)
-plotAxes(TimeData,
-         scipy.signal.savgol_filter(filtered, filtersize, polyorder),
-         'Butterworth Then Savgol', 'acceleration (ms^-2)')
-
-# plt.subplot(312)
+# plt.subplot(311)
 # plotAxes(TimeData,
-#          scipy.signal.savgol_filter(AccelData, filtersize, polyorder),
-#          'Only Savgol Filter', 'acceleration (ms^-2)')
+#          scipy.signal.savgol_filter(filtered, filtersize, polyorder),
+#          'Butterworth Then Savgol', 'acceleration (ms^-2)')
+
+plt.subplot(312)
+plotAxes(TimeData,
+         scipy.signal.savgol_filter(AccelData, filtersize, polyorder),
+         'Only Savgol Filter', 'acceleration (ms^-2)')
 
 plt.show()
