@@ -98,8 +98,8 @@ def scipyTrapezoid(accelArray):
 #correctedData = np.load(eightLinesFinalDir, allow_pickle=True)
 #correctedData = np.load(straightLineFinalDir, allow_pickle=True)
 #correctedData = np.load(data1finalDir, allow_pickle=True)
-#correctedData = np.load(fiveLinesFinalDir, allow_pickle=True)
-correctedData = np.load(twoLineFinalDir, allow_pickle=True)
+correctedData = np.load(fiveLinesFinalDir, allow_pickle=True)
+#correctedData = np.load(twoLineFinalDir, allow_pickle=True)
 #correctedData = np.load(circleFinalDir, allow_pickle=True)
 #correctedData = np.load(squareFinalDir, allow_pickle=True)
 #correctedData = np.load(ovalFinalDir, allow_pickle=True)
@@ -146,14 +146,14 @@ freq = scipy.fft.rfftfreq(n, 1/rate)
 
 
 # Plotting all the main data
-
-plt.figure(1)
-plt.subplot(311)
-plotAxes(TimeData, AccelData, 'a', 'acceleration (ms^-2)')
-plt.subplot(312)
-plotAxes(TimeData, VelData, 'v', 'velocity (ms^-1)')
-plt.subplot(313)
-plotAxes(TimeData, DispData, 'd', 'displacement (m)')
+#
+# plt.figure(1)
+# plt.subplot(311)
+# plotAxes(TimeData, AccelData, 'a', 'acceleration (ms^-2)')
+# plt.subplot(312)
+# plotAxes(TimeData, VelData, 'v', 'velocity (ms^-1)')
+# plt.subplot(313)
+# plotAxes(TimeData, DispData, 'd', 'displacement (m)')
 
 plt.figure(2)
 # plt.subplot(311)
@@ -179,6 +179,8 @@ nyquist = np.array([freq[indices[0]], freq[indices[1]], freq[indices[2]]])/2
 
 plt.subplot(313)
 order = 5
+
+
 sos = [sg.butter(order, 0.01, fs=nyquist[0], output='sos'),
        sg.butter(order, 0.01, fs=nyquist[1], output='sos'),
        sg.butter(order, 0.01, fs=nyquist[2], output='sos')]
@@ -192,7 +194,6 @@ plotAxes(TimeData, filtered, 'Butterworth', 'filtered')
 
 # Applying Savgol Filter
 #
-
 
 # Defines a filter windown size for savgol
 # Assures it is not too big, or the movement itself will be filtered
@@ -209,9 +210,30 @@ plt.figure(3)
 #          scipy.signal.savgol_filter(filtered, filtersize, polyorder),
 #          'Butterworth Then Savgol', 'acceleration (ms^-2)')
 
+savgolFilteredAccel = scipy.signal.savgol_filter(AccelData, filtersize, polyorder)
+
+# Now Plotting the savgol filtered accel, vel, and disp
+
+filteredVel = [[], [], []]
+filteredDisp = [[], [], []]
+
+
+for i in range(0, 3):
+    filteredVel[i], filteredDisp[i] = scipyTrapezoid(AccelData[i])
+
+plt.figure(1)
+plt.subplot(311)
+plotAxes(TimeData, savgolFilteredAccel, 'a', 'acceleration (ms^-2)')
 plt.subplot(312)
-plotAxes(TimeData,
-         scipy.signal.savgol_filter(AccelData, filtersize, polyorder),
-         'Only Savgol Filter', 'acceleration (ms^-2)')
+plotAxes(TimeData, filteredVel, 'v', 'velocity (ms^-1)')
+plt.subplot(313)
+plotAxes(TimeData, filteredDisp, 'd', 'displacement (m)')
+
+plt.figure(3)
+plt.subplot(311)
+# print(f"Shape 1 {filteredDisp[1].shape}\t Shape 2 {filteredDisp[0].shape}")
+plt.plot(filteredDisp[0], filteredDisp[1])
+plt.ylabel('asdasd')
+
 
 plt.show()
