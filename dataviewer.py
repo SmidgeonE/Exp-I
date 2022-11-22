@@ -11,10 +11,23 @@ straightLineDir = "raw/STRAIGHTLINE__Data.txt"
 eightLinesDir = "raw/8lines__Data.txt"
 fiveLinesDir = "raw/15-11 5 lines 12cm_15_11_2022_Data.txt"
 
+twoLine = "raw/15-11 1 osc go back to origin_15_11_2022_Data.txt"
+circle = "raw/15-11 circle turning_15_11_2022_Data.txt"
+cube = "raw/15-11 cubeish_15_11_2022_Data.txt"
+square = "raw/15-11 square_15_11_2022_Data.txt"
+oval = "raw/15-11 oval_15_11_2022_Data.txt"
+
+
 data1finalDir = "cleandata/8thtest.npy"
 straightLineFinalDir = "cleandata/STRAIGHTLINE__Data.npy"
 eightLinesFinalDir = "cleandata/8lines__Data.npy"
 fiveLinesFinalDir = "cleandata/15-11 5 lines 12cm_15_11_2022_Data.npy"
+
+twoLineFinalDir = "cleandata/15-11 1 osc go back to origin_15_11_2022_Data.npy"
+circleFinalDir = "cleandata/15-11 circle turning_15_11_2022_Data.npy"
+cubeFinalDir = "cleandata/15-11 cubeish_15_11_2022_Data.npy"
+squareFinalDir = "cleandata/15-11 square_15_11_2022_Data.npy"
+ovalFinalDir = "cleandata/15-11 oval_15_11_2022_Data.npy"
 
 dx = 0.01
 
@@ -49,6 +62,11 @@ def Normalise(dir, finalDir):
 # Normalise(data1Dir, data1finalDir)
 # Normalise(straightLineDir, straightLineFinalDir)
 # Normalise(fiveLinesDir, fiveLinesFinalDir)
+# Normalise(twoLine, twoLineFinalDir)
+# Normalise(circle, circleFinalDir)
+# Normalise(cube, cubeFinalDir)
+# Normalise(square, squareFinalDir)
+# Normalise(oval, ovalFinalDir)
 
 
 # %%
@@ -76,12 +94,17 @@ def scipyTrapezoid(accelArray):
 
 # Reading Data
 
-# rawData8Lines = np.loadtxt(eightLinesDir, skiprows=1, delimiter="\t")
 
-correctedData = np.load(eightLinesFinalDir, allow_pickle=True)
+#correctedData = np.load(eightLinesFinalDir, allow_pickle=True)
 #correctedData = np.load(straightLineFinalDir, allow_pickle=True)
 #correctedData = np.load(data1finalDir, allow_pickle=True)
 #correctedData = np.load(fiveLinesFinalDir, allow_pickle=True)
+correctedData = np.load(twoLineFinalDir, allow_pickle=True)
+#correctedData = np.load(circleFinalDir, allow_pickle=True)
+#correctedData = np.load(squareFinalDir, allow_pickle=True)
+#correctedData = np.load(ovalFinalDir, allow_pickle=True)
+#correctedData = np.load(cubeFinalDir, allow_pickle=True)
+
 
 TimeData = correctedData[:, 0]
 AccelData = [correctedData[:, 1], correctedData[:, 2], correctedData[:, 3]]
