@@ -146,13 +146,13 @@ indices = [Fourier[0,10:].argmax(), Fourier[1,10:].argmax(), Fourier[2,10:].argm
 
 
 # Calculates nyquist values for each axis
-nyquist = np.array([freq[indices[0]], freq[indices[1]], freq[indices[2]]]) * 2
+nyquist = np.array([freq[indices[0]], freq[indices[1]], freq[indices[2]]])/2
 
 plt.subplot(313)
-order = 3
-sos = [sg.butter(order,0.5,fs=nyquist[0], output='sos'),
-       sg.butter(order,0.5,fs=nyquist[1], output='sos'),
-       sg.butter(order,0.5,fs=nyquist[2], output='sos')]
+order = 5
+sos = [sg.butter(order, 0.5, fs=nyquist[0], output='sos'),
+       sg.butter(order, 0.5, fs=nyquist[1], output='sos'),
+       sg.butter(order, 0.5, fs=nyquist[2], output='sos')]
 # w, h = sg.freqs(sos)
 
 filtered = np.array([sg.sosfilt(sos[0], AccelData[0]),
@@ -164,17 +164,25 @@ plotAxes(TimeData, filtered, 'Butterworth', 'filtered')
 # Applying Savgol Filter
 #
 
-filtersize = 1001
-polyorder = 5
+
+# Defines a filter windown size for savgol
+# Assures it is not too big, or the movement itself will be filtered
+filtersizeCoeff = 6
+filtersize = round(len(TimeData)/filtersizeCoeff)
+if filtersize % 2 == 0:
+    filtersize -= 1
+
+
+polyorder = 3
 plt.figure(3)
 plt.subplot(311)
 plotAxes(TimeData,
          scipy.signal.savgol_filter(filtered, filtersize, polyorder),
-         'hello', 'acceleration (ms^-2)')
+         'Butterworth Then Savgol', 'acceleration (ms^-2)')
 
-plt.subplot(312)
-plotAxes(TimeData,
-         scipy.signal.savgol_filter(AccelData, filtersize, polyorder),
-         'hello', 'acceleration (ms^-2)')
+# plt.subplot(312)
+# plotAxes(TimeData,
+#          scipy.signal.savgol_filter(AccelData, filtersize, polyorder),
+#          'Only Savgol Filter', 'acceleration (ms^-2)')
 
 plt.show()
