@@ -96,7 +96,7 @@ def Normalise(dir, finalDir):
 # Normalise(circleFixedRadiusDir, circleFixedRadiusFinalDir)
 # Normalise(spinningCircleDir, spinningCircleFinalDir)
 # Normalise(tangentialCircleDir, tangentialCircleFinalDir)
-Normalise(jerkyAccelDir, jerkyAccelFinalDir)
+# Normalise(jerkyAccelDir, jerkyAccelFinalDir)
 # Normalise(pendulumDir, pendulumFinalDir)
 # %%
 
@@ -157,6 +157,7 @@ def findAngleOffset(accelArray):
     global magA
     magA = np.sqrt(accelArray[1]**2 + accelArray[0]**2)
     phi = np.arcsin(accelArray[0] / magA)
+    print("mean phi: ", np.mean(phi))
     return phi
 
 
@@ -176,11 +177,11 @@ def findAngleOffset(accelArray):
 
 
 # correctedData = np.load(cubeBetterFinalDir)
-# correctedData = np.load(fiveLinesBetterFinalDir)
+correctedData = np.load(fiveLinesBetterFinalDir)
 # correctedData = np.load(circleConstAccelBetterFinalDir)
 # correctedData = np.load(circleFixedRadiusFinalDir)
 # correctedData = np.load(spinningCircleFinalDir)
-correctedData = np.load(tangentialCircleFinalDir)
+# correctedData = np.load(tangentialCircleFinalDir)
 # correctedData = np.load(jerkyAccelFinalDir)
 # correctedData = np.load(pendulumFinalDir)
 
@@ -193,6 +194,13 @@ DispData = [[], [], []]
 
 phiArray = findAngleOffset(AccelData)
 AccelData[0] -= magA * np.sin(phiArray)
+
+
+# Prints max values for accel, angle
+print("Max accels:", np.max(AccelData[0]), " ",
+      np.max(AccelData[1]), " ", np.max(AccelData[2]))
+print("Max angleVel:", np.max(AngVelData[0]),
+      " ", np.max(AngVelData[1]), " ", np.max(AngVelData[2]))
 
 
 # Iterate over all axes
