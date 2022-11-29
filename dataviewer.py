@@ -128,30 +128,41 @@ def scipyTrapezoid(accelArray):
 
 def returnGlobalAccel(accelArray, angleVelArray):
     angleArray = [[], [], []]
+    length = len(accelArray[0])
+    globalAccelArray = [np.zeros(length), np.zeros(length), np.zeros(length)]
+
     for i in range(0, 3):
-        angleArray[i] = scipyTrapezoid(angleVelArray[i])
+        angleArray[i] = scipyTrapezoid(angleVelArray[i])[0]
 
     xrot = np.array(angleArray[0])
     yrot = np.array(angleArray[1])
     zrot = np.array(angleArray[2])
 
-    rx = np.array([[1, 0, 0],
-                   [0, np.cos(xrot), -np.sin(xrot)],
-                   [0, np.sin(xrot), np.cos(xrot)]])
-    ry = np.array([[np.cos(yrot), 0, np.sin(yrot)],
-                   [0, 1, 0],
-                   [-np.sin(yrot), 0, np.cos(yrot)]])
-    rz = np.array([[np.cos(zrot), -np.sin(zrot), 0],
-                   [np.sin(zrot), np.cos(zrot), 0],
-                   [0, 0, 1]])
+    for i in range(0, len(accelArray[0])):
 
-    print(rx)
+        rx = np.array([[1, 0, 0],
+                       [0, np.cos(xrot[i]), -np.sin(xrot[i])],
+                       [0, np.sin(xrot[i]), np.cos(xrot[i])]])
+        ry = np.array([[np.cos(yrot[i]), 0, np.sin(yrot[i])],
+                       [0, 1, 0],
+                       [-np.sin(yrot[i]), 0, np.cos(yrot[i])]])
+        rz = np.array([[np.cos(zrot[i]), -np.sin(zrot[i]), 0],
+                       [np.sin(zrot[i]), np.cos(zrot[i]), 0],
+                       [0, 0, 1]])
 
-    accelGlobal = np.matmul(rx, accelArray[0])
-    accelGlobal = np.matmul(ry, accelArray[1])
-    accelGlobal = np.matmul(rz, accelArray[2])
+        # print(rx)
+        coord = [angleArray[0][i], angleArray[1][i], angleArray[2][i]]
+        coord = np.matmul(rx, coord)
+        coord = np.matmul(ry, coord)
+        coord = np.matmul(rz, coord)
+        # print("xrot", xrot[i])
+        # print("Coord: ", coord[0])
+        # print("global accel array:", globalAccelArray[0])
+        globalAccelArray[0][i] = coord[0]
+        globalAccelArray[1][i] = coord[1]
+        globalAccelArray[2][i] = coord[2]
 
-    return accelGlobal
+    return globalAccelArray
 
 def findAngleOffset(accelArray):
     global magA
@@ -177,13 +188,13 @@ def findAngleOffset(accelArray):
 
 
 # correctedData = np.load(cubeBetterFinalDir)
-correctedData = np.load(fiveLinesBetterFinalDir)
+# correctedData = np.load(fiveLinesBetterFinalDir)
 # correctedData = np.load(circleConstAccelBetterFinalDir)
 # correctedData = np.load(circleFixedRadiusFinalDir)
 # correctedData = np.load(spinningCircleFinalDir)
 # correctedData = np.load(tangentialCircleFinalDir)
 # correctedData = np.load(jerkyAccelFinalDir)
-# correctedData = np.load(pendulumFinalDir)
+correctedData = np.load(pendulumFinalDir)
 
 
 TimeData = correctedData[:, 0]
@@ -324,19 +335,21 @@ plotAxes(TimeData, filteredDisp, 'd', 'displacement (m)')
 plt.show()
 
 
-# globalAccelData = [[], [], []]
-# for i in range(0, 3):
-#     globalAccelData[i] = returnGlobalAccel(AccelData[i], np.array(AngVelData))
-#     filteredVel[i], filteredDisp[i] = scipyTrapezoid(globalAccelData[i])
-#
-# plt.figure(6)
-# plt.subplot(311)
-# plt.title("autismd ata")
-# plotAxes(TimeData, savgolFilteredAccel, 'a', 'acceleration (ms^-2)')
-# plt.subplot(312)
-# plotAxes(TimeData, filteredVel, 'v', 'velocity (ms^-1)')
-# plt.subplot(313)
-# plotAxes(TimeData, filteredDisp, 'd', 'displacement (m)')
+globalAccelData = [[], [], []]
+globalAccelData = returnGlobalAccel(savgolFilteredAccel, np.array(AngVelData))
+
+for i in range(0,3):
+    filteredVel[i], filteredDisp[i] = scipyTrapezoid(globalAccelData[i])
+
+plt.figure(6)
+plt.subplot(311)
+plt.title("Global Coordinates")
+plotAxes(TimeData, globalAccelData, 'a', 'acceleration (ms^-2)')
+plt.subplot(312)
+plotAxes(TimeData, filteredVel, 'v', 'velocity (ms^-1)')
+plt.subplot(313)
+plotAxes(TimeData, filteredDisp, 'd', 'displacement (m)')
+plt.show()
 
 
 
